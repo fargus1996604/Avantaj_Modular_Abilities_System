@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2cb1286bd61a364aa085eda96fc64b3, type: 3}
+  m_Name: Heal
+  m_EditorClassIdentifier: Assembly-CSharp::Core.AbilitySystem.AbilityConfig
+  _abilities:
+  - rid: 2100518233181782174
+  - rid: 2100518233181782175
+  - rid: 2100518233181782176
+  references:
+    version: 2
+    RefIds:
+    - rid: 2100518233181782174
+      type: {class: LockInputComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        Duration: 2
+    - rid: 2100518233181782175
+      type: {class: HealingAbilityData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        Amount: 10
+    - rid: 2100518233181782176
+      type: {class: VFXComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        Prefab: {fileID: 1206498299807332555, guid: 7188c8ba93901b244b9f5d9c1954c405, type: 3}
+        Offset: {x: 0, y: 0, z: 0}
+        Target: 0
+        DurationType: 1
+        Duration: 2
