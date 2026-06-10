@@ -32,17 +32,6 @@ The system handles abilities natively as modular, interchangeable data configura
 
 Instead of stuffing movement, health tracking, audio triggers, and animation logic into a single giant script, the character acts as a lightweight registry hub (`BaseCharacterAdapter`). This hub automatically maps and resolves independent components via their abstraction interfaces at startup:
 
-                ┌─────────────────────────┐
-                │  BaseCharacterAdapter   │ <─── Central Registry Hub
-                └────────────┬────────────┘
-                             │
-     ┌───────────────────────┼─────────────────────────────┐
-     ▼                       ▼                             ▼
-┌─────────────────┐     ┌─────────────────┐     ┌───────────────────────┐
-│  MovementComp   │     │   HealthComp    │     │     AnimationComp     │
-│   (IMovable)    │     │  (IDamageable)  │     │ (IAnimationController)│
-└─────────────────┘     └─────────────────┘     └───────────────────────┘
-
 
 ### Core Modules:
 1. **Dynamic Service Registry (`BaseCharacterAdapter`)**: Provides loose, decoupled $O(1)$ lookup access to gameplay modules using the generic `GetComponentProvider<T>()` method pattern.
