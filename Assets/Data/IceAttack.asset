@@ -19,6 +19,8 @@ MonoBehaviour:
   - rid: 2100518233181782172
   - rid: 2100518233181782173
   - rid: 2100518233181782178
+  - rid: 2100518233181782229
+  - rid: 2100518233181782272
   references:
     version: 2
     RefIds:
@@ -43,6 +45,9 @@ MonoBehaviour:
         Target: 0
         DurationType: 1
         Duration: 1
+        PlayTime:
+          Type: 0
+          Duration: 0
     - rid: 2100518233181782173
       type: {class: VFXComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
       data:
@@ -51,7 +56,26 @@ MonoBehaviour:
         Target: 1
         DurationType: 1
         Duration: 2
+        PlayTime:
+          Type: 0
+          Duration: 0
     - rid: 2100518233181782178
       type: {class: AnimationComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
       data:
         AnimationName: Attack01
+    - rid: 2100518233181782229
+      type: {class: SoundComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        Clip: {fileID: 8300000, guid: 0a1d7043dd9151e4bbae181ca08f5462, type: 3}
+        TargetType: 0
+        PlayTime:
+          Type: 0
+          Duration: 0
+    - rid: 2100518233181782272
+      type: {class: SoundComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        Clip: {fileID: 8300000, guid: 11b863097ffe397488a720d45e30e83c, type: 3}
+        TargetType: 1
+        PlayTime:
+          Type: 0
+          Duration: 0

@@ -1,6 +1,7 @@
 using System;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using UnityEngine;
 
 namespace Gameplay.Abilities.Data
 {
@@ -26,10 +27,13 @@ namespace Gameplay.Abilities.Data
 
         public void Execute(IAbilityContext context)
         {
-            if (context.Owner is IHealable healable)
+            var healer = context.Owner.GetComponentProvider<IHealable>();
+            if (healer == null)
             {
-                healable.Heal(_amount);
+                Debug.LogWarning($"HealingAbility: healer is null on Entity:{context.Owner.ID}");
+                return;
             }
+            healer.Heal(_amount);
         }
     }
 }

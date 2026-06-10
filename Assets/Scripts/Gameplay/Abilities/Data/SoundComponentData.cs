@@ -9,28 +9,51 @@ namespace Gameplay.Abilities.Data
     public class SoundComponentData : IAbilityComponentData
     {
         public AudioClip Clip;
+        public TargetType TargetType;
+        public PlayTimeData PlayTime;
 
         public IAbilityAction CreateRuntimeAction()
         {
-            return new SoundAbilityAction(Clip);
+            return new SoundAbilityAction(Clip, TargetType, PlayTime);
         }
     }
 
-    public class SoundAbilityAction : IAbilityAction
+    public class SoundAbilityAction : DelayedActionBase
     {
         private AudioClip _clip;
+        private TargetType _targetType;
 
-        public SoundAbilityAction(AudioClip clip)
+        public SoundAbilityAction(AudioClip clip, TargetType targetType, PlayTimeData playTime) : base(playTime)
         {
             _clip = clip;
+            _targetType = targetType;
         }
 
-        public void Execute(IAbilityContext context)
+        protected override void OnStart(IAbilityContext context)
         {
-            if (context.Owner is ISoundController soundController)
+            if (_targetType == TargetType.Owner)
             {
-                soundController.PlayOneShot(_clip);
+                PlayOneShot(context.Owner);
             }
+            else
+            {
+                foreach (var contextTarget in context.Targets)
+                {
+                    PlayOneShot(contextTarget);
+                }
+            }
+        }
+
+        private void PlayOneShot(IEntity entity)
+        {
+            var soundController = entity.GetComponentProvider<ISoundController>();
+            if (soundController == null)
+            {
+                Debug.LogWarning($"SoundAbilityAction: SoundController is null on Entity:{entity.ID}");
+                return;
+            }
+
+            soundController.PlayOneShot(_clip);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using UnityEngine;
 
 namespace Gameplay.Abilities.Data
 {
@@ -26,10 +27,14 @@ namespace Gameplay.Abilities.Data
 
         public void Execute(IAbilityContext context)
         {
-            if (context.Owner is IAnimatable animationController)
+            var animationController = context.Owner.GetComponentProvider<IAnimationController>();
+            if (animationController == null)
             {
-                animationController.PlayAnimation(_animationName);
+                Debug.LogWarning($"AnimationAbility: animationController is null on Entity:{context.Owner.ID}");
+                return;
             }
+
+            animationController.SetTrigger(_animationName);
         }
     }
 }

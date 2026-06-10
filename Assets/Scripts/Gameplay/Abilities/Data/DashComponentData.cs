@@ -22,6 +22,7 @@ namespace Gameplay.Abilities.Data
         private readonly float _speed;
         private readonly float _duration;
         private float _elapsedTime;
+        private IMovable _movable;
 
         public DashAbilityAction(float speed, float duration)
         {
@@ -31,12 +32,19 @@ namespace Gameplay.Abilities.Data
 
         public void Execute(IAbilityContext context)
         {
-            context.Owner.RestrictionController.Register(EntityRestrictionType.Input, this);
             _elapsedTime = 0f;
+            _movable = context.Owner.GetComponentProvider<IMovable>();
+            context.Owner.RestrictionController.Register(EntityRestrictionType.Input, this);
         }
 
         public bool Tick(IAbilityContext context, float deltaTime)
         {
+            if (_movable == null)
+            {
+                Debug.LogWarning($"AimAbilityAction: movable is null on Entity:{context.Owner.ID}");
+                return true;
+            }
+
             _elapsedTime += deltaTime;
 
             if (_elapsedTime >= _duration)
@@ -45,14 +53,10 @@ namespace Gameplay.Abilities.Data
                 return true;
             }
 
-            Vector3 direction = context.Owner.Forward;
-            Vector3 translation = direction * (_speed * deltaTime);
+            var direction = context.Owner.Forward;
+            var translation = direction * (_speed * deltaTime);
 
-            if (context.Owner is IMovable movable)
-            {
-                movable.Move(translation);
-            }
-
+            _movable.Move(translation);
             return false;
         }
     }

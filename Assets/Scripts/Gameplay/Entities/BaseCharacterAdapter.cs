@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Gameplay.Abilities;
 using Gameplay.Core;
@@ -7,82 +8,50 @@ using UnityEngine;
 namespace Gameplay.Entities
 {
     [RequireComponent(typeof(CharacterController))]
-    public class BaseCharacterAdapter : MonoBehaviour, IEntity, IAnimatable, IDamageable, IHealable, IMovable
+    public class BaseCharacterAdapter : MonoBehaviour, IEntity
     {
-        private CharacterController _controller;
-        protected CharacterController Controller => _controller ??= GetComponent<CharacterController>();
-
-        private IEntityRestrictionController _restrictionController;
-        public IEntityRestrictionController RestrictionController =>
-            _restrictionController ??= new DefaultRestrictionController();
-
+        public string ID => gameObject.name;
         public Vector3 Forward => transform.forward;
         public Vector3 Position => transform.position;
+        public Quaternion Rotation => transform.rotation;
 
-        [SerializeField]
-        private CharacterAnimationController _animationController;
-
-        [SerializeField]
-        private List<AbilityConfig> _abilityConfigs;
-        public IReadOnlyCollection<AbilityConfig> AbilityConfigs => _abilityConfigs;
+        private IEntityRestrictionController _restrictionController;
+        
+        public IEntityRestrictionController RestrictionController =>
+            _restrictionController ??= new DefaultRestrictionController();
         
         [SerializeField]
-        private float _gravity = -9.81f;
+        private List<AbilityConfig> _abilityConfigs;
 
-        [SerializeField]
-        private float _movementSpeed = 5f;
+        public IReadOnlyList<AbilityConfig> AbilityConfigs => _abilityConfigs;
 
-        [SerializeField]
-        private float _rotationSpeed = 30f;
+        private readonly Dictionary<Type, object> _componentsHub = new();
 
-        private Vector3 _velocity;
-        private Vector2 _moveAxis;
-
-        private void Update()
+        private void Awake()
         {
-            bool canMove = !RestrictionController.HasRestriction(EntityRestrictionType.Movement)
-                           && !RestrictionController.HasRestriction(EntityRestrictionType.Input);
+            RegisterComponentProviders();
+        }
 
-            if (canMove && _moveAxis.sqrMagnitude > 0.01f)
+        public void RegisterComponentProviders()
+        {
+            foreach (var component in GetComponents<MonoBehaviour>())
             {
-                _velocity = new Vector3(_moveAxis.x, 0f, _moveAxis.y) * _movementSpeed;
-                if (!RestrictionController.HasRestriction(EntityRestrictionType.Rotation))
+                _componentsHub[component.GetType()] = component;
+                foreach (var interfaceType in component.GetType().GetInterfaces())
                 {
-                    var rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(_velocity),
-                        Time.deltaTime * _rotationSpeed);
-                    LookAt(rotation);
+                    _componentsHub[interfaceType] = component;
                 }
             }
-            else
+        }
+
+        public T GetComponentProvider<T>() where T : class
+        {
+            if (_componentsHub.TryGetValue(typeof(T), out var provider))
             {
-                _velocity = Vector3.zero;
+                return provider as T;
             }
 
-            if (Controller.isGrounded && _velocity.y < 0)
-            {
-                _velocity.y = -2f;
-            }
-
-            _velocity.y += _gravity * Time.deltaTime;
-            
-            var velocity = new Vector3(Controller.velocity.x, 0, Controller.velocity.z).normalized;
-            _animationController.SetVelocity(velocity.magnitude);
-            Move(_velocity * Time.deltaTime);
+            return null;
         }
-
-        public void Move(Vector3 delta)
-        {
-            Controller.Move(delta);
-        }
-
-        public void LookAt(Quaternion quaternion)
-        {
-            transform.rotation = quaternion;
-        }
-
-        public void SetMoveAxis(Vector2 axis) => _moveAxis = axis;
-        public void PlayAnimation(string animationName) => _animationController.SetTrigger(animationName);
-        public void TakeDamage(int damage) => Debug.Log(damage);
-        public void Heal(int amount) => Debug.Log(amount);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using UnityEngine;
 
 namespace Gameplay.Abilities.Data
 {
@@ -28,10 +29,14 @@ namespace Gameplay.Abilities.Data
         {
             foreach (var target in context.Targets)
             {
-                if (target is IDamageable damageable)
+                var damageable = target.GetComponentProvider<IDamageable>();
+                if (damageable == null)
                 {
-                    damageable.TakeDamage(_damage);
+                    Debug.LogWarning($"DamageAbility: damageable is null on Entity:{target.ID}");
+                    continue;
                 }
+
+                damageable.TakeDamage(_damage);
             }
         }
     }

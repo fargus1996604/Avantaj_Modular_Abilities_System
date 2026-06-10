@@ -34,6 +34,7 @@ namespace Gameplay.Abilities.Data
         private readonly float _rotationTime;
         private float _elapsedTime;
         private Quaternion _startRotation;
+        private IMovable _movable;
 
         public AimAbilityAction(float rotationTime)
         {
@@ -43,29 +44,36 @@ namespace Gameplay.Abilities.Data
         public void Execute(IAbilityContext context)
         {
             _elapsedTime = 0f;
+            _startRotation = context.Owner.Rotation;
+            _movable = context.Owner.GetComponentProvider<IMovable>();
             context.Owner.RestrictionController.Register(EntityRestrictionType.Rotation, this);
-            if (context.Owner is MonoBehaviour ownerMono)
-            {
-                _startRotation = ownerMono.transform.rotation;
-            }
         }
 
         public bool Tick(IAbilityContext context, float deltaTime)
         {
-            _elapsedTime += deltaTime;
-            if (context.Targets != null && context.Targets.Count > 0 && context.Owner is IMovable movableOwner)
+            if (_movable == null)
             {
-                var target = context.Targets.First();
-                var owner = context.Owner;
-                Vector3 direction = target.Position - owner.Position;
-                direction.y = 0f;
-                if (direction.sqrMagnitude > 0.001f)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(direction);
-                    float progress = _rotationTime > 0f ? Mathf.Clamp01(_elapsedTime / _rotationTime) : 1f;
-                    Quaternion currentRotation = Quaternion.Slerp(_startRotation, targetRotation, progress);
-                    movableOwner.LookAt(currentRotation);
-                }
+                Debug.LogWarning($"AimAbilityAction: movable is null on Entity:{context.Owner.ID}");
+                context.Owner.RestrictionController.Unregister(EntityRestrictionType.Rotation, this);
+                return true;
+            }
+
+            if (context.Targets == null || context.Targets.Count == 0)
+            {
+                return true;
+            }
+
+            _elapsedTime += deltaTime;
+            var target = context.Targets.First();
+            var owner = context.Owner;
+            Vector3 direction = target.Position - owner.Position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                float progress = _rotationTime > 0f ? Mathf.Clamp01(_elapsedTime / _rotationTime) : 1f;
+                Quaternion currentRotation = Quaternion.Slerp(_startRotation, targetRotation, progress);
+                _movable.LookAt(currentRotation);
             }
 
             if (_elapsedTime >= _rotationTime)

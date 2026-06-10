@@ -6,5 +6,6 @@ namespace Gameplay.Core
     {
         void Move(Vector3 delta);
         void LookAt(Quaternion quaternion);
+        void SetMoveAxis(Vector2 axis);
     }
 }

@@ -25,80 +25,64 @@ namespace Gameplay.Abilities.Data
         public TargetType Target;
         public DurationType DurationType;
         public float Duration;
+        public PlayTimeData PlayTime;
 
         public IAbilityAction CreateRuntimeAction()
         {
-            return new VFXAction(Prefab, Offset, Target, DurationType, Duration);
+            return new VFXAction(Prefab, Offset, Target, DurationType, Duration, PlayTime);
         }
     }
 
-    public class VFXAction : ITickableAction
+    public class VFXAction : ContinuousDelayedActionBase
     {
         public static event Action<VFXSpawnArgs> HandleVFXEvent;
 
-        private GameObject _prefab;
-        private Vector3 _offset;
-        private TargetType _target;
-        private DurationType _durationType;
-        private float _duration;
-        private float _elapsedTime;
-        private List<string> _guids = new();
+        private readonly GameObject _prefab;
+        private readonly Vector3 _offset;
+        private readonly TargetType _target;
+        private readonly List<string> _guids = new();
 
-        public VFXAction(GameObject prefab, Vector3 offset, TargetType target, DurationType durationType,
-            float duration)
+        public VFXAction(GameObject prefab, Vector3 offset, TargetType target, 
+            DurationType durationType, float duration, PlayTimeData playTime) 
+            : base(playTime, durationType, duration)
         {
             _prefab = prefab;
             _offset = offset;
             _target = target;
-            _durationType = durationType;
-            _duration = duration;
         }
 
-        public void Execute(IAbilityContext context)
+        protected override void OnContinuousStart(IAbilityContext context)
         {
-            if (context.Owner == null)
-                return;
-
-            if (_target == TargetType.Player)
+            if (_target == TargetType.Owner)
             {
-                var args = GetSpawnArgs(context.Owner);
-                _guids.Add(args.ID);
-                HandleVFXEvent?.Invoke(args);
+                Spawn(context.Owner);
             }
-            else
+            else if (_target == TargetType.Enemy)
             {
-                foreach (var contextTarget in context.Targets)
+                foreach (var target in context.Targets)
                 {
-                    var args = GetSpawnArgs(contextTarget);
-                    _guids.Add(args.ID);
-                    HandleVFXEvent?.Invoke(args);
+                    Spawn(target);
                 }
             }
         }
 
-        private VFXSpawnArgs GetSpawnArgs(IEntity target)
+        protected override void OnContinuousEnd(IAbilityContext context)
         {
+            foreach (var guid in _guids)
+            {
+                HandleVFXEvent?.Invoke(VFXSpawnArgs.RequestStop(guid));
+            }
+            _guids.Clear();
+        }
+
+        private void Spawn(IEntity entity)
+        {
+            if (entity == null) return;
+            
             var newGuid = Guid.NewGuid().ToString();
-            return new VFXSpawnArgs(newGuid, VFXRequestType.Spawn, _prefab, _offset, target);
-        }
-
-        public bool Tick(IAbilityContext context, float deltaTime)
-        {
-            if (_durationType == DurationType.Instant)
-                return true;
-
-            _elapsedTime += deltaTime;
-            if (_elapsedTime >= _duration)
-            {
-                foreach (var guid in _guids)
-                {
-                    HandleVFXEvent?.Invoke(VFXSpawnArgs.RequestStop(guid));
-                }
-
-                return true;
-            }
-
-            return false;
+            _guids.Add(newGuid);
+            
+            HandleVFXEvent?.Invoke(new VFXSpawnArgs(newGuid, VFXRequestType.Spawn, _prefab, _offset, entity));
         }
     }
 

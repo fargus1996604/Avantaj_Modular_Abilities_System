@@ -29,6 +29,7 @@ namespace Gameplay.Abilities.Data
         {
             _elapsedTime = 0f;
 
+            context.Owner.RestrictionController.Register(EntityRestrictionType.Input, this);
             context.Owner.RestrictionController.Register(EntityRestrictionType.Movement, this);
             context.Owner.RestrictionController.Register(EntityRestrictionType.Rotation, this);
         }
@@ -39,6 +40,7 @@ namespace Gameplay.Abilities.Data
 
             if (_elapsedTime >= _duration)
             {
+                context.Owner.RestrictionController.Unregister(EntityRestrictionType.Input, this);
                 context.Owner.RestrictionController.Unregister(EntityRestrictionType.Movement, this);
                 context.Owner.RestrictionController.Unregister(EntityRestrictionType.Rotation, this);
                 return true;

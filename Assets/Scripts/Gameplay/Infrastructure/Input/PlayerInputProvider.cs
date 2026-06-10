@@ -7,12 +7,16 @@ using UnityEngine.InputSystem;
 
 namespace Gameplay.Infrastructure.Input
 {
-    [RequireComponent(typeof(BaseCharacterAdapter))]
+    [RequireComponent(typeof(IEntity))]
+    [RequireComponent(typeof(IMovable))]
     [RequireComponent(typeof(AbilityCastController))]
     public class PlayerInputProvider : MonoBehaviour
     {
-        private BaseCharacterAdapter _characterAdapter;
-        protected BaseCharacterAdapter CharacterAdapter => _characterAdapter ??= GetComponent<BaseCharacterAdapter>();
+        private IEntity _entity;
+        protected IEntity Entity => _entity ??= GetComponent<IEntity>();
+        
+        private IMovable _movable;
+        protected IMovable Movable => _movable ??= GetComponent<IMovable>();
 
         private AbilityCastController _castController;
         protected AbilityCastController CastController => _castController ??= GetComponent<AbilityCastController>();
@@ -21,12 +25,10 @@ namespace Gameplay.Infrastructure.Input
         private Camera _mainCamera;
 
         private PlayerInputActions _inputActions;
-        private IEntity _entity;
 
         private void Awake()
         {
             _inputActions = new PlayerInputActions();
-            _entity = CharacterAdapter;
         }
 
         private void OnEnable()
@@ -43,12 +45,12 @@ namespace Gameplay.Infrastructure.Input
 
         private void Update()
         {
-            if (CharacterAdapter == null || _entity == null)
+            if (Entity == null)
                 return;
 
-            if (_entity.RestrictionController.HasRestriction(EntityRestrictionType.Input))
+            if (Entity.RestrictionController.HasRestriction(EntityRestrictionType.Input))
             {
-                CharacterAdapter.SetMoveAxis(Vector2.zero);
+                Movable.SetMoveAxis(Vector2.zero);
                 return;
             }
 
@@ -65,11 +67,11 @@ namespace Gameplay.Infrastructure.Input
                 Vector3 calculatedDirection = camForward * rawInput.y + camRight * rawInput.x;
                 Vector2 finalMoveAxis = new Vector2(calculatedDirection.x, calculatedDirection.z);
 
-                CharacterAdapter.SetMoveAxis(finalMoveAxis);
+                Movable.SetMoveAxis(finalMoveAxis);
             }
             else
             {
-                CharacterAdapter.SetMoveAxis(Vector2.zero);
+                Movable.SetMoveAxis(Vector2.zero);
             }
         }
 
