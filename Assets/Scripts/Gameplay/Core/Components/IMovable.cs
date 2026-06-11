@@ -1,8 +1,9 @@
+using Gameplay.Core.Abilities;
 using UnityEngine;
 
-namespace Gameplay.Core
+namespace Gameplay.Core.Components
 {
-    public interface IMovable
+    public interface IMovable : IEntityComponent
     {
         void Move(Vector3 delta);
         void LookAt(Quaternion quaternion);

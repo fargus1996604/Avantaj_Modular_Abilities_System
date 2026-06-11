@@ -1,6 +1,7 @@
 using System;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using Gameplay.Core.Components;
 using UnityEngine;
 
 namespace Gameplay.Abilities.Data

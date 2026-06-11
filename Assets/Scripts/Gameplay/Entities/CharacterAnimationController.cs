@@ -1,4 +1,5 @@
 using Gameplay.Core;
+using Gameplay.Core.Components;
 using UnityEngine;
 
 namespace Gameplay.Entities

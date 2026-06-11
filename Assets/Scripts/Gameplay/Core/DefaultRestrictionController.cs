@@ -4,29 +4,31 @@ namespace Gameplay.Core
 {
     public class DefaultRestrictionController : IEntityRestrictionController
     {
-        private Dictionary<EntityRestrictionType, List<object>> _register = new();
+        private readonly Dictionary<EntityRestrictionType, HashSet<object>> _register = new();
 
         public void Register(EntityRestrictionType restrictionType, object owner)
         {
-            if (_register.ContainsKey(restrictionType))
+            if (!_register.TryGetValue(restrictionType, out var owners))
             {
-                _register[restrictionType].Add(owner);
+                owners = new HashSet<object>();
+                _register.Add(restrictionType, owners);
             }
-            else
-            {
-                _register.Add(restrictionType, new List<object> { owner });
-            }
+
+            owners.Add(owner);
         }
 
         public void Unregister(EntityRestrictionType restrictionType, object owner)
         {
-            if (_register.ContainsKey(restrictionType))
+            if (!_register.TryGetValue(restrictionType, out var owners))
             {
-                _register[restrictionType].Remove(owner);
-                if (_register[restrictionType].Count == 0)
-                {
-                    _register.Remove(restrictionType);
-                }
+                return;
+            }
+
+            owners.Remove(owner);
+
+            if (owners.Count == 0)
+            {
+                _register.Remove(restrictionType);
             }
         }
 
