@@ -7,7 +7,7 @@ namespace Gameplay.Abilities
     public class AbilitiesHandler : MonoBehaviour
     {
         private List<ActiveAbility> _activeAbilities = new();
-        
+
         private void Update()
         {
             for (int i = _activeAbilities.Count - 1; i >= 0; i--)

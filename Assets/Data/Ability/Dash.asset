@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2cb1286bd61a364aa085eda96fc64b3, type: 3}
   m_Name: Dash
   m_EditorClassIdentifier: Assembly-CSharp::Core.AbilitySystem.AbilityConfig
+  _abilityId: 0
+  _cooldown: 2
+  _targetSelector: {fileID: 11400000, guid: 7eb798a1ac2772a478977e63fce1efcf, type: 2}
   _abilities:
+  - rid: 2100518265525895258
   - rid: 2100518233181782166
   - rid: 2100518233181782167
   references:
@@ -27,3 +31,8 @@ MonoBehaviour:
       data:
         Speed: 10
         Duration: 1
+    - rid: 2100518265525895258
+      type: {class: AimComponentData, ns: Gameplay.Abilities.Data, asm: Assembly-CSharp}
+      data:
+        TypeAim: 0
+        RotationTime: 0.2

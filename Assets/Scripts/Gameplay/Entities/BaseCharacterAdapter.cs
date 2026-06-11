@@ -16,13 +16,11 @@ namespace Gameplay.Entities
         public Quaternion Rotation => transform.rotation;
 
         private IEntityRestrictionController _restrictionController;
-        
         public IEntityRestrictionController RestrictionController =>
             _restrictionController ??= new DefaultRestrictionController();
         
         [SerializeField]
         private List<AbilityConfig> _abilityConfigs;
-
         public IReadOnlyList<AbilityConfig> AbilityConfigs => _abilityConfigs;
 
         private readonly Dictionary<Type, object> _componentsHub = new();
@@ -34,7 +32,8 @@ namespace Gameplay.Entities
 
         public void RegisterComponentProviders()
         {
-            foreach (var component in GetComponents<MonoBehaviour>())
+            var gameObjectLayerComponents = GetComponents<IEntityComponent>();
+            foreach (var component in gameObjectLayerComponents)
             {
                 _componentsHub[component.GetType()] = component;
                 foreach (var interfaceType in component.GetType().GetInterfaces())
@@ -44,14 +43,14 @@ namespace Gameplay.Entities
             }
         }
 
-        public T GetComponentProvider<T>() where T : class
+        public T GetComponentProvider<T>() where T : IEntityComponent
         {
             if (_componentsHub.TryGetValue(typeof(T), out var provider))
             {
-                return provider as T;
+                return (T)provider;
             }
 
-            return null;
+            return default;
         }
     }
 }

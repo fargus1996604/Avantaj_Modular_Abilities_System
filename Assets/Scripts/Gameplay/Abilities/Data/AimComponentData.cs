@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using Gameplay.Core.Components;
 using UnityEngine;
 
 namespace Gameplay.Abilities.Data
@@ -53,13 +54,14 @@ namespace Gameplay.Abilities.Data
         {
             if (_movable == null)
             {
-                Debug.LogWarning($"AimAbilityAction: movable is null on Entity:{context.Owner.ID}");
                 context.Owner.RestrictionController.Unregister(EntityRestrictionType.Rotation, this);
+                Debug.LogWarning($"AimAbilityAction: movable is null on Entity:{context.Owner.ID}");
                 return true;
             }
 
             if (context.Targets == null || context.Targets.Count == 0)
             {
+                context.Owner.RestrictionController.Unregister(EntityRestrictionType.Rotation, this);
                 return true;
             }
 

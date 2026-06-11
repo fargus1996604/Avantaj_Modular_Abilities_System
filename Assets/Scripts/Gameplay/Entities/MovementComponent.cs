@@ -1,5 +1,6 @@
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using Gameplay.Core.Components;
 using UnityEngine;
 
 namespace Gameplay.Entities
@@ -32,12 +33,6 @@ namespace Gameplay.Entities
 
         private void Update()
         {
-            if (HasMovementRestricted())
-            {
-                AnimationController.SetVelocity(0);
-                return;
-            }
-
             if (_moveAxis.sqrMagnitude > 0.001f)
             {
                 _velocity = new Vector3(_moveAxis.x, 0f, _moveAxis.y) * _movementSpeed;

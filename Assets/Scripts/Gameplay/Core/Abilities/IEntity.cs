@@ -9,6 +9,6 @@ namespace Gameplay.Core.Abilities
         Vector3 Position { get; }
         Quaternion Rotation { get; }
         IEntityRestrictionController RestrictionController { get; }
-        T GetComponentProvider<T>() where T : class;
+        T GetComponentProvider<T>() where T : IEntityComponent;
     }
 }

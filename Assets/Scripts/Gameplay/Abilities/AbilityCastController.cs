@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using Gameplay.Core.Abilities.Cooldown;
 using Gameplay.Entities;
 using UnityEngine;
 
@@ -14,18 +16,9 @@ namespace Gameplay.Abilities
 
         private AbilitiesHandler _abilitiesHandler;
         protected AbilitiesHandler AbilitiesHandler => _abilitiesHandler ??= GetComponent<AbilitiesHandler>();
-
-        [SerializeField]
-        private float _searchRadius = 10f;
-
-        [SerializeField]
-        private LayerMask _enemyLayer;
-
-        [SerializeField] 
-        [Range(0f, 360f)]
-        private float _viewAngle = 90f;
-
+        
         private IEntity _entity;
+        private readonly ICooldownService _cooldowns = new CooldownService();
 
         private void Awake()
         {
@@ -47,47 +40,23 @@ namespace Gameplay.Abilities
                 return;
             }
 
-            List<IEntity> targetEnemies = FindAllEnemiesInCone();
+            if (!_cooldowns.IsReady(config.AbilityId))
+            {
+                return;
+            }
+
+            _cooldowns.Register(config.AbilityId, config.Cooldown);
+
+            List<IEntity> targetEnemies = new List<IEntity>();
+            
+            if (config.TargetSelector != null)
+            {
+                targetEnemies = config.TargetSelector.SelectTargets(_entity);
+            }
+
             var context = new DefaultContext(_entity, targetEnemies);
             var activeAbility = new ActiveAbility(context, config.GetAbilityActions());
             AbilitiesHandler.RegisterAbility(activeAbility);
-        }
-        
-        private List<IEntity> FindAllEnemiesInCone()
-        {
-            List<IEntity> validTargets = new List<IEntity>();
-            Collider[] colliders = Physics.OverlapSphere(transform.position, _searchRadius, _enemyLayer);
-            Vector3 forwardDirection = transform.forward;
-            foreach (var col in colliders)
-            {
-                if (col.TryGetComponent<IEntity>(out var enemy))
-                {
-                    Vector3 directionToEnemy = col.transform.position - transform.position;
-                    directionToEnemy.y = 0f; 
-
-                    float angleToEnemy = Vector3.Angle(forwardDirection, directionToEnemy);
-                    if (angleToEnemy <= _viewAngle / 2f)
-                    {
-                        validTargets.Add(enemy);
-                    }
-                }
-            }
-
-            return validTargets;
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, _searchRadius);
-
-            Vector3 forward = transform.forward;
-            Vector3 leftRayDirection = Quaternion.Euler(0, -_viewAngle / 2f, 0) * forward;
-            Vector3 rightRayDirection = Quaternion.Euler(0, _viewAngle / 2f, 0) * forward;
-
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawRay(transform.position, leftRayDirection * _searchRadius);
-            Gizmos.DrawRay(transform.position, rightRayDirection * _searchRadius);
         }
     }
 }

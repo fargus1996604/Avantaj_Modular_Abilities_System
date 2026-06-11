@@ -1,6 +1,7 @@
 using Gameplay.Abilities;
 using Gameplay.Core;
 using Gameplay.Core.Abilities;
+using Gameplay.Core.Components;
 using Gameplay.Entities;
 using UnityEngine;
 using UnityEngine.InputSystem;

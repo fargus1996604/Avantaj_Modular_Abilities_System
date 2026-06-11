@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Gameplay.Abilities;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -14,7 +13,11 @@ namespace Gameplay.Core.Abilities.Editor
         private int _selectedTypeIndex;
         
         private ReorderableList _reorderableList;
+        private SerializedProperty _abilityIdProperty;
+        private SerializedProperty _cooldownProp;
+        private SerializedProperty _targetSelectorProp;
         private SerializedProperty _componentsProp;
+  
 
         private void OnEnable()
         {
@@ -25,7 +28,11 @@ namespace Gameplay.Core.Abilities.Editor
                 .ToArray();
 
             // Cache the serialized property of the components list
+            _abilityIdProperty = serializedObject.FindProperty("_abilityId");
+            _cooldownProp = serializedObject.FindProperty("_cooldown");
+            _targetSelectorProp = serializedObject.FindProperty("_targetSelector");
             _componentsProp = serializedObject.FindProperty("_abilities");
+
             
             if (_componentsProp != null)
             {
@@ -62,43 +69,67 @@ namespace Gameplay.Core.Abilities.Editor
 
         public override void OnInspectorGUI()
         {
-            // Sync the serialized object's representation with the actual asset data
             serializedObject.Update();
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.PropertyField(
+                _abilityIdProperty,
+                new GUIContent("Ability Id"));
+
+            EditorGUILayout.PropertyField(
+                _cooldownProp,
+                new GUIContent("Cooldown"));
+
+            EditorGUILayout.PropertyField(
+                _targetSelectorProp,
+                new GUIContent("Target Selector"));
+
+            EditorGUILayout.Space(10);
 
             if (_reorderableList != null)
             {
-                // Render the entire list with built-in drag handles, borders, and sorting behaviors
                 _reorderableList.DoLayoutList();
             }
             else
             {
-                EditorGUILayout.HelpBox("The field '_abilities' was not found! Please check its name in AbilityConfig.cs", MessageType.Warning);
+                EditorGUILayout.HelpBox(
+                    "The field '_abilities' was not found! Please check its name in AbilityConfig.cs",
+                    MessageType.Warning);
             }
 
-            // --- ADD NEW COMPONENT INTERFACE ---
             EditorGUILayout.Space(15);
-            EditorGUILayout.LabelField("Selected Ability", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                "Add Ability Component",
+                EditorStyles.boldLabel);
 
-            if (_componentTypes == null || _componentTypes.Length == 0) return;
-
-            // Render a popup dropdown displaying all available component type names
-            string[] typeNames = _componentTypes.Select(t => t.Name).ToArray();
-            _selectedTypeIndex = EditorGUILayout.Popup("Component Type", _selectedTypeIndex, typeNames);
-
-            if (GUILayout.Button("Add Component"))
+            if (_componentTypes != null && _componentTypes.Length > 0)
             {
-                if (_componentsProp == null) return;
+                string[] typeNames =
+                    _componentTypes.Select(t => t.Name).ToArray();
 
-                // Instantiate the selected C# data class via reflection
-                var newComponent = Activator.CreateInstance(_componentTypes[_selectedTypeIndex]) as IAbilityComponentData;
-                
-                // Safely insert the new instance into the SerializeReference array
-                int lastIndex = _componentsProp.arraySize;
-                _componentsProp.InsertArrayElementAtIndex(lastIndex);
-                _componentsProp.GetArrayElementAtIndex(lastIndex).managedReferenceValue = newComponent;
+                _selectedTypeIndex = EditorGUILayout.Popup(
+                    "Component Type",
+                    _selectedTypeIndex,
+                    typeNames);
+
+                if (GUILayout.Button("Add Component"))
+                {
+                    var newComponent =
+                        Activator.CreateInstance(
+                                _componentTypes[_selectedTypeIndex])
+                            as IAbilityComponentData;
+
+                    int lastIndex = _componentsProp.arraySize;
+
+                    _componentsProp.InsertArrayElementAtIndex(lastIndex);
+
+                    _componentsProp
+                        .GetArrayElementAtIndex(lastIndex)
+                        .managedReferenceValue = newComponent;
+                }
             }
 
-            // Apply all modified properties back to the target ScriptableObject asset
             serializedObject.ApplyModifiedProperties();
         }
 
